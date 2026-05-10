@@ -9,6 +9,11 @@ on:
       - "wrangler.toml"
       - ".github/workflows/deploy-cloudflare.yml"
   workflow_dispatch:
+    inputs:
+      project_name:
+        description: "Existing Cloudflare Pages project name. Leave empty to use repository variable CLOUDFLARE_PAGES_PROJECT_NAME."
+        required: false
+        type: string
 
 jobs:
   deploy:
@@ -20,7 +25,20 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Deploy to existing Cloudflare Pages project
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          command: pages deploy . --project-name=edgetunnel --branch=main --commit-dirty=true
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          PAGES_PROJECT_INPUT: ${{ inputs.project_name }}
+          PAGES_PROJECT_VAR: ${{ vars.CLOUDFLARE_PAGES_PROJECT_NAME }}
+        run: |
+          set -euo pipefail
+          PROJECT_NAME="${PAGES_PROJECT_INPUT:-${PAGES_PROJECT_VAR:-}}"
+
+          if [ -z "$PROJECT_NAME" ]; then
+            echo "::error::Missing Cloudflare Pages project name. Set repository variable CLOUDFLARE_PAGES_PROJECT_NAME to the existing Pages project name, or run this workflow manually with project_name."
+            echo "Available Pages projects for this token/account:"
+            npx --yes wrangler@4 pages project list || true
+            exit 1
+          fi
+
+          echo "Deploying to existing Cloudflare Pages project: $PROJECT_NAME"
+          npx --yes wrangler@4 pages deploy . --project-name="$PROJECT_NAME" --branch=main --commit-dirty=true
