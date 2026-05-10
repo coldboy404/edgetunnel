@@ -1,4 +1,4 @@
-name: Deploy to Cloudflare
+name: Deploy to Cloudflare Pages
 
 on:
   push:
@@ -12,14 +12,15 @@ on:
 
 jobs:
   deploy:
-    name: Deploy Worker with Wrangler
+    name: Deploy existing Pages project
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Deploy to Cloudflare
+      - name: Deploy to existing Cloudflare Pages project
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          command: pages deploy . --project-name=edgetunnel --branch=main --commit-dirty=true
