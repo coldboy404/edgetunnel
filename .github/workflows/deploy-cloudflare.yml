@@ -31,7 +31,7 @@ jobs:
           PAGES_PROJECT_VAR: ${{ vars.CLOUDFLARE_PAGES_PROJECT_NAME }}
         run: |
           set -euo pipefail
-          PROJECT_NAME="${PAGES_PROJECT_INPUT:-${PAGES_PROJECT_VAR:-}}"
+          PROJECT_NAME="${PAGES_PROJECT_INPUT:-${PAGES_PROJECT_VAR:-edt-cm}}"
 
           if [ -z "$PROJECT_NAME" ]; then
             echo "::error::Missing Cloudflare Pages project name. Set repository variable CLOUDFLARE_PAGES_PROJECT_NAME to the existing Pages project name, or run this workflow manually with project_name."
